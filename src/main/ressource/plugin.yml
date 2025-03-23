@@ -1,0 +1,12 @@
+name: PushOut
+main: me.pushout.PushOut
+version: 1.0
+api-version: 1.20
+commands:
+  pushout:
+    description: Lance une partie de PushOut
+    usage: /pushout start
+permissions:
+  pushout.use:
+    description: Permet d'utiliser le mode PushOut
+    default: op
