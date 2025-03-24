@@ -1,6 +1,6 @@
-me\pushout\CommandsManager.class
 me\pushout\PushOut.class
-me\pushout\EventsListener.class
 me\pushout\GameManager$1.class
 me\pushout\KOManager.class
 me\pushout\GameManager.class
+me\pushout\CommandsManager.class
+me\pushout\EventsListener.class
