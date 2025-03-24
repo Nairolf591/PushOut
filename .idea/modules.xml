@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PushOut.iml" filepath="$PROJECT_DIR$/PushOut.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/PushOut.iml" filepath="$PROJECT_DIR$/.idea/PushOut.iml" />
     </modules>
   </component>
 </project>

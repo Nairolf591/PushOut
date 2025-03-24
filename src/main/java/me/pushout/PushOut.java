@@ -18,6 +18,9 @@ public class PushOut extends JavaPlugin {
         getCommand("pushout").setExecutor(new CommandsManager());
 
         getLogger().info("PushOut a été activé !");
+
+        Bukkit.getPluginManager().registerEvents(new GrapplingHookManager(), this);
+
     }
 
     @Override

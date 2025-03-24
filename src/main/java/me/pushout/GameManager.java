@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -51,13 +52,15 @@ public class GameManager {
             Location spawnLocation = new Location(center.getWorld(), x, y + 1, z);
             player.teleport(spawnLocation);
             player.sendMessage("§aVous avez été placé sur l'arène !");
+            // Donner le grappin
+            player.getInventory().addItem(GrapplingHookManager.createGrapplingHook());
         }
 
+        // Geler les joueurs pendant le compte à rebours
         freezePlayers(true);
 
         new BukkitRunnable() {
             int countdown = 10;
-
             @Override
             public void run() {
                 if (countdown > 0) {
@@ -66,6 +69,12 @@ public class GameManager {
                 } else {
                     Bukkit.broadcastMessage("§aLa partie commence maintenant !");
                     freezePlayers(false);
+                    // Appliquer les effets Speed II et Jump Boost II (durée longue pour couvrir toute la partie)
+                    for (Player player : players) {
+                        Object PotionEffectType;
+                        //player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 1, false, false));
+                        //player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 999999, 1, false, false));
+                    }
                     this.cancel();
                 }
             }
