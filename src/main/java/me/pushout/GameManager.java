@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -47,13 +48,27 @@ public class GameManager {
             double x = center.getX() + (radius * Math.cos(angle));
             double z = center.getZ() + (radius * Math.sin(angle));
 
-            // Trouver un bloc solide sous eux
+            // Trouver un bloc solide sous le joueur
             int y = findSafeY((int) x, (int) z);
             Location spawnLocation = new Location(center.getWorld(), x, y + 1, z);
             player.teleport(spawnLocation);
             player.sendMessage("§aVous avez été placé sur l'arène !");
+
+            // Réinitialise le KO à 0%
+            KOManager.resetKO(player);
+
             // Donner le grappin
             player.getInventory().addItem(GrapplingHookManager.createGrapplingHook());
+
+            // Vérification : si le joueur tombe en dessous de la couche 30, on le repositionne
+            Bukkit.getScheduler().runTaskLater(PushOut.getInstance(), () -> {
+                if (player.getLocation().getY() < 30) {
+                    int safeY = findSafeY((int) x, (int) z);
+                    Location newSpawn = new Location(center.getWorld(), x, safeY + 1, z);
+                    player.teleport(newSpawn);
+                    player.sendMessage("§cVotre spawn a été modifié pour éviter une mort immédiate.");
+                }
+            }, 20L);
         }
 
         // Geler les joueurs pendant le compte à rebours
@@ -61,6 +76,7 @@ public class GameManager {
 
         new BukkitRunnable() {
             int countdown = 10;
+
             @Override
             public void run() {
                 if (countdown > 0) {
@@ -68,17 +84,19 @@ public class GameManager {
                     countdown--;
                 } else {
                     Bukkit.broadcastMessage("§aLa partie commence maintenant !");
+                    // Débloque les joueurs
                     freezePlayers(false);
-                    // Appliquer les effets Speed II et Jump Boost II (durée longue pour couvrir toute la partie)
+                    // Appliquer les effets Speed II et Jump Boost II pour couvrir toute la partie
                     for (Player player : players) {
-                        Object PotionEffectType;
-                        //player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 1, false, false));
-                        //player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 999999, 1, false, false));
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 1, false, false));
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 999999, 1, false, false));
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 999999, 5, false, false));
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 999999, 5, false, false));
                     }
-                    this.cancel();
+                    cancel();
                 }
             }
-        }.runTaskTimer(PushOut.getInstance(), 0L, 20L); // 20 ticks = 1 seconde
+        }.runTaskTimer(PushOut.getInstance(), 0L, 20L);
     }
 
     private int findSafeY(int x, int z) {

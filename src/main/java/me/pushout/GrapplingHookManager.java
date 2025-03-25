@@ -73,9 +73,9 @@ public class GrapplingHookManager implements Listener {
     }
 
     private void propelPlayer(Player player, PlayerFishEvent event) {
-        Vector direction = event.getHook().getLocation().toVector().subtract(player.getLocation().toVector()).normalize();
+        Vector direction = player.getLocation().getDirection().normalize();
         double distance = event.getHook().getLocation().distance(player.getLocation());
-        double force = Math.min(distance * 0.5, 2.0) + 0.5; // Le 0.5 peut être changé
+        double force = Math.min(distance * 0.5, 2.0) + 1; // Force similaire à l'ancienne méthode
         Vector velocity = direction.multiply(force);
         player.setVelocity(velocity);
     }
@@ -84,6 +84,19 @@ public class GrapplingHookManager implements Listener {
         int remainingUses = usesLeft.getOrDefault(player.getUniqueId(), MAX_USES);
         long nextRecharge = COOLDOWN - ((System.currentTimeMillis() - lastUse.getOrDefault(player.getUniqueId(), 0L)) / 1000);
         nextRecharge = Math.max(nextRecharge, 0);
-        player.sendActionBar("§eGrappins: §a" + remainingUses + " §7| Recharge: §c" + nextRecharge + "s");
+
+        // Construction d'une barre de progression
+        double progress = (COOLDOWN - nextRecharge) / (double) COOLDOWN;
+        int totalBars = 10;
+        int filledBars = (int) (progress * totalBars);
+        StringBuilder bar = new StringBuilder();
+        for (int i = 0; i < filledBars; i++) {
+            bar.append("█");
+        }
+        for (int i = 0; i < totalBars - filledBars; i++) {
+            bar.append("░");
+        }
+
+        player.sendActionBar("§eGrappins: §a" + remainingUses + " §7| Recharge: " + bar.toString());
     }
 }
