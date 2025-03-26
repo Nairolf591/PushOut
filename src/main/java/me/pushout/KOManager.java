@@ -23,11 +23,12 @@ public class KOManager {
         player.setExp((float)((newPercent % 100) / 100.0));
         player.setLevel((int)newPercent);
         // Appliquer le KB en utilisant le vecteur passé en paramètre
-        double knockbackMultiplier = (0.5 + (newPercent / 100.0)) * 4; // multiplication par 4
+        double knockbackMultiplier = (0.5 + (newPercent / 100.0)) * 2.5; // multiplication par 3 au lieu de 4
         Vector knockback = hitDirection.normalize().multiply(knockbackMultiplier);
         player.setVelocity(knockback);
         updatePlayerScoreboard(player);
     }
+
 
     public void addKO(Player player, double amount) {
         UUID playerId = player.getUniqueId();

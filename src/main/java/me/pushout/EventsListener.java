@@ -22,10 +22,11 @@ public class EventsListener implements Listener {
         if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
             Player attacker = (Player) event.getDamager();
             Player victim = (Player) event.getEntity();
-            // Calcul du vecteur allant de l'attaquant à la victime
+            // Calcul du vecteur allant de l'attaquant à la victime (pour que le KB projette la victime à l'opposé du coup)
             Vector direction = victim.getLocation().toVector().subtract(attacker.getLocation().toVector()).normalize();
-            // Utilisation de la méthode surcharge pour appliquer le KB dans la bonne direction
             new KOManager().addKO(victim, 2.3, direction);
+            // Désactive le grappin du joueur touché pendant 0,8 sec
+            GrapplingHookManager.disableGrappling(victim, 800);
         }
     }
 
@@ -36,13 +37,13 @@ public class EventsListener implements Listener {
             Snowball snowball = (Snowball) event.getEntity();
             if (snowball.getShooter() instanceof Player) {
                 Player shooter = (Player) snowball.getShooter();
-                // Vérification du cooldown
+                // Vérification du cooldown (pour le lancement, ce cooldown est géré dans SnowballManager)
                 long now = System.currentTimeMillis();
-                if (now < snowballCooldown.getOrDefault(shooter.getUniqueId(), 0L)) {
+                if (now < EventsListener.snowballCooldown.getOrDefault(shooter.getUniqueId(), 0L)) {
                     shooter.sendMessage("§cBoule de neige en recharge !");
                     return;
                 }
-                snowballCooldown.put(shooter.getUniqueId(), now + SNOWBALL_COOLDOWN_MS);
+                EventsListener.snowballCooldown.put(shooter.getUniqueId(), now + SNOWBALL_COOLDOWN_MS);
                 // Si la boule de neige a touché un joueur
                 if (event.getHitEntity() instanceof Player) {
                     Player victim = (Player) event.getHitEntity();
@@ -54,8 +55,9 @@ public class EventsListener implements Listener {
                     else if (distance >= 5)
                         bonus = 2;
                     double total = 2.3 + bonus; // 2,3% de base + bonus selon la distance
-                    koManager.addKO(victim, total);
-                    // Le knockback est appliqué dans KOManager.addKO (mais vous pouvez en ajouter ici si besoin)
+                    // Pour le knockback, on calcule la direction depuis le lanceur vers la victime
+                    Vector direction = victim.getLocation().toVector().subtract(shooter.getLocation().toVector()).normalize();
+                    new KOManager().addKO(victim, total, direction);
                     // Désactive le grappin du joueur touché pendant 0,8 sec
                     GrapplingHookManager.disableGrappling(victim, 800);
                 }

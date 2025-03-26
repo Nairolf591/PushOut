@@ -20,10 +20,11 @@ public class SnowballManager implements Listener {
     private static HashMap<UUID, Long> snowballCooldown = new HashMap<>();
 
     public SnowballManager() {
-        // Tâche répétitive pour recharger les boules de neige
+        // Tâche répétitive pour recharger les boules de neige, mais uniquement si une partie est en cours
         new BukkitRunnable() {
             @Override
             public void run() {
+                if (!GameManager.getInstance().isGameRunning()) return;
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     int count = player.getInventory().all(Material.SNOWBALL).values().stream()
                             .mapToInt(ItemStack::getAmount).sum();
@@ -55,7 +56,18 @@ public class SnowballManager implements Listener {
                 long now = System.currentTimeMillis();
                 long cooldownEnd = snowballCooldown.getOrDefault(uuid, now);
                 long remaining = Math.max(cooldownEnd - now, 0);
-                player.sendActionBar("§eProchaine boule de neige dans: §a" + (remaining / 1000.0) + " sec");
+                // Construction d'une barre de progression similaire à celle du grappin
+                double progress = (double)(COOLDOWN_MS - remaining) / COOLDOWN_MS;
+                int totalBars = 10;
+                int filledBars = (int) (progress * totalBars);
+                StringBuilder bar = new StringBuilder();
+                for (int i = 0; i < filledBars; i++) {
+                    bar.append("█");
+                }
+                for (int i = 0; i < totalBars - filledBars; i++) {
+                    bar.append("░");
+                }
+                player.sendActionBar("§eBoules de neige: " + count + " §7| Recharge: " + bar.toString());
             }
         }
     }

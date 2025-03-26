@@ -120,6 +120,11 @@ public class GameManager {
 
     public void stopGame() {
         gameRunning = false;
+        // Retirer les snowballs de tous les joueurs pour éviter qu'ils en aient en dehors d'une partie
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.getInventory().remove(Material.SNOWBALL);
+            player.getInventory().remove(Material.FISHING_ROD);
+        }
         players.clear();
     }
 
