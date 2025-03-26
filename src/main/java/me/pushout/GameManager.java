@@ -60,6 +60,9 @@ public class GameManager {
             // Donner le grappin
             player.getInventory().addItem(GrapplingHookManager.createGrapplingHook());
 
+            // Initialisation d'un Scoreboard personnel (facultatif si déjà présent)
+            player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+
             // Vérification : si le joueur tombe en dessous de la couche 30, on le repositionne
             Bukkit.getScheduler().runTaskLater(PushOut.getInstance(), () -> {
                 if (player.getLocation().getY() < 30) {
