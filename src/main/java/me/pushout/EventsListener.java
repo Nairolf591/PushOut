@@ -7,6 +7,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.util.Vector;
 
 public class EventsListener implements Listener {
 
@@ -15,14 +16,19 @@ public class EventsListener implements Listener {
     private static final long SNOWBALL_COOLDOWN_MS = 7000;
     private static final java.util.HashMap<java.util.UUID, Long> snowballCooldown = new java.util.HashMap<>();
 
-      @EventHandler
+    @EventHandler
     public void onPlayerHit(EntityDamageByEntityEvent event) {
         // Coup à la main : chaque coup ajoute 2,3%
         if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
+            Player attacker = (Player) event.getDamager();
             Player victim = (Player) event.getEntity();
-            koManager.addKO(victim, 2.3);
+            // Calcul du vecteur allant de l'attaquant à la victime
+            Vector direction = victim.getLocation().toVector().subtract(attacker.getLocation().toVector()).normalize();
+            // Utilisation de la méthode surcharge pour appliquer le KB dans la bonne direction
+            new KOManager().addKO(victim, 2.3, direction);
         }
     }
+
 
     @EventHandler
     public void onSnowballHit(ProjectileHitEvent event) {

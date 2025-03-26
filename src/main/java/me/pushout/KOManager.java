@@ -15,15 +15,27 @@ public class KOManager {
 // Utilisation de double pour gérer les pourcentages avec décimales
     private static HashMap<UUID, Double> koPercent = new HashMap<>();
 
+    public void addKO(Player player, double amount, Vector hitDirection) {
+        UUID playerId = player.getUniqueId();
+        double newPercent = koPercent.getOrDefault(playerId, 0.0) + amount;
+        koPercent.put(playerId, newPercent);
+        // Mise à jour de la barre XP (modulo 100) et du niveau (pour le total)
+        player.setExp((float)((newPercent % 100) / 100.0));
+        player.setLevel((int)newPercent);
+        // Appliquer le KB en utilisant le vecteur passé en paramètre
+        double knockbackMultiplier = (0.5 + (newPercent / 100.0)) * 4; // multiplication par 4
+        Vector knockback = hitDirection.normalize().multiply(knockbackMultiplier);
+        player.setVelocity(knockback);
+        updatePlayerScoreboard(player);
+    }
+
     public void addKO(Player player, double amount) {
         UUID playerId = player.getUniqueId();
         double newPercent = koPercent.getOrDefault(playerId, 0.0) + amount;
         koPercent.put(playerId, newPercent);
-        // Mise à jour de la barre XP :
-        // La barre représente le reste modulo 100, pour une barre toujours pleine à 100%
+        // Mise à jour de la barre XP (modulo 100) et du niveau (pour le total)
         player.setExp((float)((newPercent % 100) / 100.0));
-        player.setLevel((int)newPercent); // Affiche le pourcentage entier
-        applyKnockback(player, newPercent);
+        player.setLevel((int)newPercent);
         updatePlayerScoreboard(player);
     }
 
@@ -57,14 +69,13 @@ public class KOManager {
         if (percent < 80)
             color = ChatColor.GREEN.toString();
         else if (percent < 130)
-            color = ChatColor.GOLD.toString(); // orange
+            color = ChatColor.GOLD.toString();
         else if (percent < 180)
             color = ChatColor.RED.toString();
         else if (percent < 250)
             color = ChatColor.DARK_RED.toString();
         else
             color = ChatColor.BLACK.toString();
-        // On affiche le pourcentage avec sa couleur (le Scoreboard affichera le score numérique)
         Score score = obj.getScore(color + player.getName());
         score.setScore((int) percent);
     }
