@@ -1,6 +1,11 @@
 package me.pushout;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
@@ -10,7 +15,7 @@ public class KOManager {
 // Utilisation de double pour gérer les pourcentages avec décimales
     private static HashMap<UUID, Double> koPercent = new HashMap<>();
 
-   public void addKO(Player player, double amount) {
+    public void addKO(Player player, double amount) {
         UUID playerId = player.getUniqueId();
         double newPercent = koPercent.getOrDefault(playerId, 0.0) + amount;
         koPercent.put(playerId, newPercent);
@@ -22,7 +27,7 @@ public class KOManager {
         updatePlayerScoreboard(player);
     }
 
-    private void applyKnockback(Player player, int percent) {
+    private void applyKnockback(Player player, double percent) {
         double knockbackMultiplier = 0.5 + (percent / 100.0);
         Vector knockback = player.getLocation().getDirection().multiply(knockbackMultiplier);
         player.setVelocity(knockback);
@@ -36,10 +41,9 @@ public class KOManager {
         updatePlayerScoreboard(player);
     }
 
-    public int getKO(Player player) {
+    public double getKO(Player player) {
         return koPercent.getOrDefault(player.getUniqueId(), 0.0);
     }
-
     // Met à jour le Scoreboard affiché au-dessus du pseudo avec une couleur en fonction du pourcentage
     public static void updatePlayerScoreboard(Player player) {
         Scoreboard board = player.getScoreboard();

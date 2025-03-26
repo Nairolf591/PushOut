@@ -57,35 +57,36 @@ public class GrapplingHookManager implements Listener {
 
     @EventHandler
     public void onGrappleUse(PlayerFishEvent event) {
-    if (event.getState() == PlayerFishEvent.State.REEL_IN || event.getState() == PlayerFishEvent.State.FAILED_ATTEMPT) {
-        Player player = event.getPlayer();
-        if (player.getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
-            UUID uuid = player.getUniqueId();
-            usesLeft.putIfAbsent(uuid, MAX_USES);
-            
-            if (usesLeft.get(uuid) > 0) {
-                usesLeft.put(uuid, usesLeft.get(uuid) - 1);
-                lastUse.put(uuid, System.currentTimeMillis());
-                
-                // Calcul de la hauteur gagnée grâce au grappin
-                double heightGain = event.getHook().getLocation().getY() - player.getLocation().getY();
-                double bonus = 0;
-                if (heightGain >= 30)
-                    bonus = 12;
-                else if (heightGain >= 20)
-                    bonus = 8;
-                else if (heightGain >= 10)
-                    bonus = 4;
-                
-                // Ajoute le bonus de KO au joueur lui-même
-                new KOManager().addKO(player, bonus);
-                
-                // Propulse le joueur avec la méthode existante
-                propelPlayer(player, event);
-            } else {
-                player.sendMessage("§cGrappin en recharge !");
+        if (event.getState() == PlayerFishEvent.State.REEL_IN || event.getState() == PlayerFishEvent.State.FAILED_ATTEMPT) {
+            Player player = event.getPlayer();
+            if (player.getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
+                UUID uuid = player.getUniqueId();
+                usesLeft.putIfAbsent(uuid, MAX_USES);
+
+                if (usesLeft.get(uuid) > 0) {
+                    usesLeft.put(uuid, usesLeft.get(uuid) - 1);
+                    lastUse.put(uuid, System.currentTimeMillis());
+
+                    // Calcul de la hauteur gagnée grâce au grappin
+                    double heightGain = event.getHook().getLocation().getY() - player.getLocation().getY();
+                    double bonus = 0;
+                    if (heightGain >= 30)
+                        bonus = 12;
+                    else if (heightGain >= 20)
+                        bonus = 8;
+                    else if (heightGain >= 10)
+                        bonus = 4;
+
+                    // Ajoute le bonus de KO au joueur lui-même
+                    new KOManager().addKO(player, bonus);
+
+                    // Propulse le joueur avec la méthode existante
+                    propelPlayer(player, event);
+                } else {
+                    player.sendMessage("§cGrappin en recharge !");
+                }
+                updateActionBar(player);
             }
-            updateActionBar(player);
         }
     }
 
