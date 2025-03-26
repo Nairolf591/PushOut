@@ -14,9 +14,12 @@ public class KOManager {
         UUID playerId = player.getUniqueId();
         int newPercent = koPercent.getOrDefault(playerId, 0) + amount;
         koPercent.put(playerId, newPercent);
-        player.setExp(newPercent / 100.0f);
+        // Mise à jour de la barre d'XP
+        player.setExp(Math.min(newPercent / 100.0f, 1.0f));
         player.setLevel(newPercent);
         applyKnockback(player, newPercent);
+        // Mise à jour du Scoreboard au-dessus de la tête
+        updatePlayerScoreboard(player);
     }
 
     private void applyKnockback(Player player, int percent) {
@@ -30,9 +33,23 @@ public class KOManager {
         koPercent.put(player.getUniqueId(), 0);
         player.setExp(0);
         player.setLevel(0);
+        updatePlayerScoreboard(player);
     }
 
     public int getKO(Player player) {
         return koPercent.getOrDefault(player.getUniqueId(), 0);
+    }
+
+     public static void updatePlayerScoreboard(Player player) {
+        Scoreboard board = player.getScoreboard();
+        Objective obj = board.getObjective("koPercentage");
+        if (obj == null) {
+            // Crée un nouvel objectif pour afficher le KO % en dessous du nom du joueur
+            obj = board.registerNewObjective("koPercentage", "dummy", "KO %");
+            obj.setDisplaySlot(DisplaySlot.BELOW_NAME);
+        }
+        int percent = koPercent.getOrDefault(player.getUniqueId(), 0);
+        Score score = obj.getScore(player.getName());
+        score.setScore(percent);
     }
 }
