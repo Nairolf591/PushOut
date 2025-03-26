@@ -54,13 +54,16 @@ public class GameManager {
             player.teleport(spawnLocation);
             player.sendMessage("§aVous avez été placé sur l'arène !");
 
-            // Réinitialise le KO à 0%
+           // Réinitialise le KO
             KOManager.resetKO(player);
-
-            // Donner le grappin
+    
+            // Attribution du grappin
             player.getInventory().addItem(GrapplingHookManager.createGrapplingHook());
-
-            // Initialisation d'un Scoreboard personnel (facultatif si déjà présent)
+    
+            // Attribution de 16 boules de neige
+            player.getInventory().addItem(new ItemStack(Material.SNOWBALL, 16));
+    
+            // On initialise un Scoreboard personnel (pour l'affichage du KO)
             player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
             // Vérification : si le joueur tombe en dessous de la couche 30, on le repositionne
