@@ -22,6 +22,9 @@ public class GrapplingHookManager implements Listener {
     private static final int MAX_USES = 5;
     private static final int COOLDOWN = 7; // en secondes
 
+    // Map pour gérer la désactivation temporaire du grappin
+    private static HashMap<UUID, Long> disabledUntil = new HashMap<>();
+
     public GrapplingHookManager() {
         new BukkitRunnable() {
             @Override
@@ -53,22 +56,49 @@ public class GrapplingHookManager implements Listener {
     }
 
     @EventHandler
+    @EventHandler
     public void onGrappleUse(PlayerFishEvent event) {
         if (event.getState() == PlayerFishEvent.State.REEL_IN || event.getState() == PlayerFishEvent.State.FAILED_ATTEMPT) {
             Player player = event.getPlayer();
-            if (player.getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
-                UUID uuid = player.getUniqueId();
-                usesLeft.putIfAbsent(uuid, MAX_USES);
-                
-                if (usesLeft.get(uuid) > 0) {
-                    usesLeft.put(uuid, usesLeft.get(uuid) - 1);
-                    lastUse.put(uuid, System.currentTimeMillis());
-                    propelPlayer(player, event);
-                } else {
-                    player.sendMessage("§cGrappin en recharge !");
-                }
-                updateActionBar(player);
+            // Si le joueur est désactivé, on ignore l'utilisation
+            if (isGrapplingDisabled(player)) {
+                player.sendMessage("§cGrappin désactivé temporairement !");
+                return;
             }
+            UUID uuid = player.getUniqueId();
+            usesLeft.putIfAbsent(uuid, MAX_USES);
+
+            if (usesLeft.get(uuid) > 0) {
+                usesLeft.put(uuid, usesLeft.get(uuid) - 1);
+                lastUse.put(uuid, System.currentTimeMillis());
+                // Calcul du bonus en fonction de la hauteur gagnée
+                double base = 2.3;
+                double heightGain = event.getHook().getLocation().getY() - player.getLocation().getY();
+                double bonus = 0;
+                if (heightGain >= 30)
+                    bonus = 12;
+                else if (heightGain >= 20)
+                    bonus = 8;
+                else if (heightGain >= 10)
+                    bonus = 4;
+                double totalDamage = base + bonus;
+                // Si le grappin attrape un joueur (ce cas est rare, mais on le teste)
+                if (event.getCaught() instanceof Player) {
+                    Player victim = (Player) event.getCaught();
+                    // Ajoute le KO au joueur touché
+                    new KOManager().addKO(victim, totalDamage);
+                    // Applique un knockback basé sur la direction du joueur lanceur
+                    Vector direction = player.getLocation().getDirection().normalize();
+                    double distance = event.getHook().getLocation().distance(player.getLocation());
+                    double force = Math.min(distance * 0.5, 2.0) + 0.5;
+                    victim.setVelocity(direction.multiply(force));
+                    // Désactive le grappin du joueur touché pendant 0,8 sec
+                    disableGrappling(victim, 800);
+                }
+            } else {
+                player.sendMessage("§cGrappin en recharge !");
+            }
+            updateActionBar(player);
         }
     }
 
@@ -80,7 +110,7 @@ public class GrapplingHookManager implements Listener {
         player.setVelocity(velocity);
     }
 
-    private void updateActionBar(Player player) {
+     private void updateActionBar(Player player) {
         int remainingUses = usesLeft.getOrDefault(player.getUniqueId(), MAX_USES);
         long nextRecharge = COOLDOWN - ((System.currentTimeMillis() - lastUse.getOrDefault(player.getUniqueId(), 0L)) / 1000);
         nextRecharge = Math.max(nextRecharge, 0);
@@ -98,5 +128,14 @@ public class GrapplingHookManager implements Listener {
         }
 
         player.sendActionBar("§eGrappins: §a" + remainingUses + " §7| Recharge: " + bar.toString());
+    }
+
+        // Désactive le grappin du joueur pendant "millis" millisecondes
+    public static void disableGrappling(Player player, long millis) {
+        disabledUntil.put(player.getUniqueId(), System.currentTimeMillis() + millis);
+    }
+
+    public static boolean isGrapplingDisabled(Player player) {
+        return System.currentTimeMillis() < disabledUntil.getOrDefault(player.getUniqueId(), 0L);
     }
 }
