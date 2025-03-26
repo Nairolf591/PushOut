@@ -56,23 +56,18 @@ public class GrapplingHookManager implements Listener {
     }
 
     @EventHandler
-    @EventHandler
     public void onGrappleUse(PlayerFishEvent event) {
-        if (event.getState() == PlayerFishEvent.State.REEL_IN || event.getState() == PlayerFishEvent.State.FAILED_ATTEMPT) {
-            Player player = event.getPlayer();
-            // Si le joueur est désactivé, on ignore l'utilisation
-            if (isGrapplingDisabled(player)) {
-                player.sendMessage("§cGrappin désactivé temporairement !");
-                return;
-            }
+    if (event.getState() == PlayerFishEvent.State.REEL_IN || event.getState() == PlayerFishEvent.State.FAILED_ATTEMPT) {
+        Player player = event.getPlayer();
+        if (player.getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
             UUID uuid = player.getUniqueId();
             usesLeft.putIfAbsent(uuid, MAX_USES);
-
+            
             if (usesLeft.get(uuid) > 0) {
                 usesLeft.put(uuid, usesLeft.get(uuid) - 1);
                 lastUse.put(uuid, System.currentTimeMillis());
-                // Calcul du bonus en fonction de la hauteur gagnée
-                double base = 2.3;
+                
+                // Calcul de la hauteur gagnée grâce au grappin
                 double heightGain = event.getHook().getLocation().getY() - player.getLocation().getY();
                 double bonus = 0;
                 if (heightGain >= 30)
@@ -81,20 +76,12 @@ public class GrapplingHookManager implements Listener {
                     bonus = 8;
                 else if (heightGain >= 10)
                     bonus = 4;
-                double totalDamage = base + bonus;
-                // Si le grappin attrape un joueur (ce cas est rare, mais on le teste)
-                if (event.getCaught() instanceof Player) {
-                    Player victim = (Player) event.getCaught();
-                    // Ajoute le KO au joueur touché
-                    new KOManager().addKO(victim, totalDamage);
-                    // Applique un knockback basé sur la direction du joueur lanceur
-                    Vector direction = player.getLocation().getDirection().normalize();
-                    double distance = event.getHook().getLocation().distance(player.getLocation());
-                    double force = Math.min(distance * 0.5, 2.0) + 0.5;
-                    victim.setVelocity(direction.multiply(force));
-                    // Désactive le grappin du joueur touché pendant 0,8 sec
-                    disableGrappling(victim, 800);
-                }
+                
+                // Ajoute le bonus de KO au joueur lui-même
+                new KOManager().addKO(player, bonus);
+                
+                // Propulse le joueur avec la méthode existante
+                propelPlayer(player, event);
             } else {
                 player.sendMessage("§cGrappin en recharge !");
             }
