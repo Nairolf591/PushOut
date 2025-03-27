@@ -6,6 +6,9 @@ commands:
   pushout:
     description: Lance une partie de PushOut
     usage: /pushout start
+  pushoutconfig:
+    description: Ouvre le menu de configuration de PushOut
+    usage: /pushoutconfig
 permissions:
   pushout.use:
     description: Permet d'utiliser le mode PushOut

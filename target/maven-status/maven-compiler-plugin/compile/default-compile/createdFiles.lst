@@ -1,10 +1,14 @@
-me\pushout\PushOut.class
-me\pushout\GrapplingHookManager$1.class
 me\pushout\GameManager$1.class
-me\pushout\KOManager.class
 me\pushout\SnowballManager.class
 me\pushout\GameManager.class
 me\pushout\SnowballManager$1.class
 me\pushout\CommandsManager.class
 me\pushout\GrapplingHookManager.class
+me\pushout\ConfigCommand.class
+me\pushout\ConfigMenuListener.class
+me\pushout\Config.class
+me\pushout\ConfigMenu.class
+me\pushout\PushOut.class
+me\pushout\GrapplingHookManager$1.class
+me\pushout\KOManager.class
 me\pushout\EventsListener.class

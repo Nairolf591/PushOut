@@ -17,26 +17,26 @@ public class KOManager {
     private static HashMap<UUID, Double> koPercent = new HashMap<>();
 
     public void addKO(Player player, double amount, Vector hitDirection) {
+        if (!GameManager.getInstance().isGameRunning()) return; // n'applique le KB que pendant la partie
         UUID playerId = player.getUniqueId();
         double newPercent = koPercent.getOrDefault(playerId, 0.0) + amount;
         koPercent.put(playerId, newPercent);
         player.setExp((float)((newPercent % 100) / 100.0));
         player.setLevel((int)newPercent);
-        // Augmentation du multiplicateur pour accentuer l'impact du KO
-        double knockbackMultiplier = 0.5 + Math.pow(newPercent / 100.0, 2) * 16.0;
+        // Utilisation des valeurs de Config pour le calcul du KB
+        double knockbackMultiplier = Config.KB_BASE + Math.pow(newPercent / 100.0, 2) * Config.KB_MULTIPLIER;
         Vector knockback = hitDirection.normalize().multiply(knockbackMultiplier);
         player.setVelocity(knockback);
         updatePlayerScoreboard(player);
     }
 
-
     public void addKO(Player player, double amount) {
+        if (!GameManager.getInstance().isGameRunning()) return;
         UUID playerId = player.getUniqueId();
         double newPercent = koPercent.getOrDefault(playerId, 0.0) + amount;
         koPercent.put(playerId, newPercent);
-        // Mise à jour de la barre XP (modulo 100) et du niveau (pour le total)
-        player.setExp((float) ((newPercent % 100) / 100.0));
-        player.setLevel((int) newPercent);
+        player.setExp((float)((newPercent % 100) / 100.0));
+        player.setLevel((int)newPercent);
         updatePlayerScoreboard(player);
     }
 
@@ -66,19 +66,9 @@ public class KOManager {
             below.setDisplaySlot(DisplaySlot.BELOW_NAME);
         }
         double percent = koPercent.getOrDefault(updatedPlayer.getUniqueId(), 0.0);
-        String color;
-        if (percent < 80)
-            color = ChatColor.GREEN.toString();
-        else if (percent < 130)
-            color = ChatColor.GOLD.toString();
-        else if (percent < 180)
-            color = ChatColor.RED.toString();
-        else if (percent < 250)
-            color = ChatColor.DARK_RED.toString();
-        else
-            color = ChatColor.BLACK.toString();
-        Score scoreBelow = below.getScore(color + updatedPlayer.getName());
-        scoreBelow.setScore((int) percent);
+        // Utilisation du nom du joueur sans modification de clé
+        String entry = updatedPlayer.getName();
+        below.getScore(entry).setScore((int) percent);
 
         // Mise à jour du scoreboard global en sidebar uniquement si la partie est en cours
         if (GameManager.getInstance().isGameRunning()) {
