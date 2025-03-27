@@ -21,6 +21,8 @@ public class PushOut extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new GrapplingHookManager(), this);
 
+        Bukkit.getPluginManager().registerEvents(new SnowballManager(), this);
+
     }
 
     @Override

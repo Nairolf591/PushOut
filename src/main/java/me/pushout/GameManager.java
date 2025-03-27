@@ -4,9 +4,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.DisplaySlot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +41,7 @@ public class GameManager {
         players.clear();
         players.addAll(Bukkit.getOnlinePlayers()); // Tous les joueurs participent
 
-        double radius = 5.0; // Rayon du cercle
+        double radius = 8.0; // Rayon du cercle
         double angleStep = 360.0 / players.size(); // Angle entre chaque joueur
 
         for (int i = 0; i < players.size(); i++) {
@@ -54,11 +56,14 @@ public class GameManager {
             player.teleport(spawnLocation);
             player.sendMessage("§aVous avez été placé sur l'arène !");
 
-            // Réinitialise le KO à 0%
+           // Réinitialise le KO
             KOManager.resetKO(player);
-
-            // Donner le grappin
+    
+            // Attribution du grappin
             player.getInventory().addItem(GrapplingHookManager.createGrapplingHook());
+
+            // On initialise un Scoreboard personnel (pour l'affichage du KO)
+            player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
             // Vérification : si le joueur tombe en dessous de la couche 30, on le repositionne
             Bukkit.getScheduler().runTaskLater(PushOut.getInstance(), () -> {
@@ -113,13 +118,36 @@ public class GameManager {
 
     public void stopGame() {
         gameRunning = false;
+        // Pour chaque joueur, retirer les items et téléporter en (0,0) à la surface
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.getInventory().remove(Material.SNOWBALL);
+            player.getInventory().remove(Material.FISHING_ROD);
+            int safeY = Bukkit.getWorld("world").getHighestBlockYAt(0, 0);
+            Location safeLocation = new Location(Bukkit.getWorld("world"), 0, safeY + 1, 0);
+            player.teleport(safeLocation);
+        }
         players.clear();
+
+        // Après 1 seconde, remettre les joueurs en mode SURVIVAL et effacer la sidebar
+        Bukkit.getScheduler().runTaskLater(PushOut.getInstance(), () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.setGameMode(org.bukkit.GameMode.SURVIVAL);
+                player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+                for (PotionEffect effect : player.getActivePotionEffects())
+                    player.removePotionEffect(effect.getType());
+            }
+        }, 20L);
     }
+
 
     public void checkGameEnd() {
         if (gameRunning && players.size() == 1) {
             Player winner = players.get(0);
             Bukkit.broadcastMessage("§6" + winner.getName() + " a gagné la partie !");
+
+            // Effet visuel
+            winner.sendTitle("§6🏆 VICTOIRE ! 🏆", "§eVous avez gagné la partie !", 10, 60, 10);
+
             stopGame();
         }
     }
