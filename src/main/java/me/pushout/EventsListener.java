@@ -37,28 +37,20 @@ public class EventsListener implements Listener {
             Snowball snowball = (Snowball) event.getEntity();
             if (snowball.getShooter() instanceof Player) {
                 Player shooter = (Player) snowball.getShooter();
-                // Vérification du cooldown (pour le lancement, ce cooldown est géré dans SnowballManager)
-                long now = System.currentTimeMillis();
-                if (now < EventsListener.snowballCooldown.getOrDefault(shooter.getUniqueId(), 0L)) {
-                    shooter.sendMessage("§cBoule de neige en recharge !");
-                    return;
-                }
-                EventsListener.snowballCooldown.put(shooter.getUniqueId(), now + SNOWBALL_COOLDOWN_MS);
+                // Suppression de la vérification du cooldown pour les effets des boules de neige
+
                 // Si la boule de neige a touché un joueur
                 if (event.getHitEntity() instanceof Player) {
                     Player victim = (Player) event.getHitEntity();
-                    // Calcul de la distance entre le lanceur et la victime
                     double distance = shooter.getLocation().distance(victim.getLocation());
                     double bonus = 0;
-                    if (distance >= 12)
+                    if (distance >= 10)
                         bonus = 5;
-                    else if (distance >= 5)
+                    else if (distance >= 4)
                         bonus = 2;
-                    double total = 2.3 + bonus; // 2,3% de base + bonus selon la distance
-                    // Pour le knockback, on calcule la direction depuis le lanceur vers la victime
+                    double total = 2.3 + bonus;
                     Vector direction = victim.getLocation().toVector().subtract(shooter.getLocation().toVector()).normalize();
                     new KOManager().addKO(victim, total, direction);
-                    // Désactive le grappin du joueur touché pendant 0,8 sec
                     GrapplingHookManager.disableGrappling(victim, 800);
                 }
             }

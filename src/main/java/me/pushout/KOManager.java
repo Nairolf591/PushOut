@@ -20,11 +20,10 @@ public class KOManager {
         UUID playerId = player.getUniqueId();
         double newPercent = koPercent.getOrDefault(playerId, 0.0) + amount;
         koPercent.put(playerId, newPercent);
-        // Mise à jour de la barre XP (modulo 100) et du niveau (pour le total)
-        player.setExp((float) ((newPercent % 100) / 100.0));
-        player.setLevel((int) newPercent);
-        // Appliquer le KB en utilisant le vecteur passé en paramètre
-        double knockbackMultiplier = (0.5 + (newPercent / 100.0)) * 2.5; // multiplication par 3 au lieu de 4
+        player.setExp((float)((newPercent % 100) / 100.0));
+        player.setLevel((int)newPercent);
+        // Augmentation du multiplicateur pour accentuer l'impact du KO
+        double knockbackMultiplier = 0.5 + Math.pow(newPercent / 100.0, 2) * 16.0;
         Vector knockback = hitDirection.normalize().multiply(knockbackMultiplier);
         player.setVelocity(knockback);
         updatePlayerScoreboard(player);
@@ -58,10 +57,9 @@ public class KOManager {
     public double getKO(Player player) {
         return koPercent.getOrDefault(player.getUniqueId(), 0.0);
     }
-
     public static void updatePlayerScoreboard(Player updatedPlayer) {
-        // Mise à jour de l'affichage "below name" pour le joueur lui-même
         Scoreboard board = updatedPlayer.getScoreboard();
+        // Affichage sous le pseudo (Below Name)
         Objective below = board.getObjective("koPercentage");
         if (below == null) {
             below = board.registerNewObjective("koPercentage", "dummy", "KO %");
@@ -82,19 +80,27 @@ public class KOManager {
         Score scoreBelow = below.getScore(color + updatedPlayer.getName());
         scoreBelow.setScore((int) percent);
 
-        // Mise à jour du scoreboard global en sidebar pour TOUS les joueurs
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            Scoreboard pb = p.getScoreboard();
-            Objective sidebar = pb.getObjective("koSidebar");
-            if (sidebar == null) {
-                sidebar = pb.registerNewObjective("koSidebar", "dummy", "KO %");
-                sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
+        // Mise à jour du scoreboard global en sidebar uniquement si la partie est en cours
+        if (GameManager.getInstance().isGameRunning()) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Scoreboard pb = p.getScoreboard();
+                Objective sidebar = pb.getObjective("koSidebar");
+                if (sidebar == null) {
+                    sidebar = pb.registerNewObjective("koSidebar", "dummy", "KO %");
+                    sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
+                }
+                for (Player target : Bukkit.getOnlinePlayers()) {
+                    int targetPercent = koPercent.getOrDefault(target.getUniqueId(), 0.0).intValue();
+                    sidebar.getScore(target.getName()).setScore(targetPercent);
+                }
             }
-            // Pour chaque joueur, on met à jour sa ligne
-            for (Player target : Bukkit.getOnlinePlayers()) {
-                int targetPercent = koPercent.getOrDefault(target.getUniqueId(), 0.0).intValue();
-                sidebar.getScore(target.getName()).setScore(targetPercent);
+        } else {
+            // Si la partie n'est pas en cours, on efface la sidebar de tous
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Scoreboard pb = p.getScoreboard();
+                pb.clearSlot(DisplaySlot.SIDEBAR);
             }
         }
     }
+
 }

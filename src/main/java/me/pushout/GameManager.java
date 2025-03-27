@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.DisplaySlot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,20 +122,21 @@ public class GameManager {
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.getInventory().remove(Material.SNOWBALL);
             player.getInventory().remove(Material.FISHING_ROD);
-            // Téléportation à la surface en (0,0)
             int safeY = Bukkit.getWorld("world").getHighestBlockYAt(0, 0);
             Location safeLocation = new Location(Bukkit.getWorld("world"), 0, safeY + 1, 0);
             player.teleport(safeLocation);
         }
         players.clear();
 
-        // Après 1 seconde, remettre les joueurs en mode survie
+        // Après 1 seconde, remettre les joueurs en mode SURVIVAL et effacer la sidebar
         Bukkit.getScheduler().runTaskLater(PushOut.getInstance(), () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.setGameMode(org.bukkit.GameMode.SURVIVAL);
+                player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
             }
         }, 20L);
     }
+
 
     public void checkGameEnd() {
         if (gameRunning && players.size() == 1) {
