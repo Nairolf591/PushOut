@@ -59,6 +59,12 @@ public class GrapplingHookManager implements Listener {
     public void onGrappleUse(PlayerFishEvent event) {
         if (event.getState() == PlayerFishEvent.State.REEL_IN || event.getState() == PlayerFishEvent.State.FAILED_ATTEMPT) {
             Player player = event.getPlayer();
+            // Si le grappin est désactivé, on arrête l'exécution
+            if (isGrapplingDisabled(player)) {
+                player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
+                        new net.md_5.bungee.api.chat.TextComponent("§cGrappin désactivé temporairement !"));
+                return;
+            }
             if (player.getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
                 UUID uuid = player.getUniqueId();
                 usesLeft.putIfAbsent(uuid, MAX_USES);
@@ -98,7 +104,12 @@ public class GrapplingHookManager implements Listener {
         player.setVelocity(velocity);
     }
 
-     private void updateActionBar(Player player) {
+    private void updateActionBar(Player player) {
+        // Afficher uniquement si le joueur tient une canne à pêche
+        if (player.getInventory().getItemInMainHand().getType() != Material.FISHING_ROD) {
+            return;
+        }
+
         int remainingUses = usesLeft.getOrDefault(player.getUniqueId(), MAX_USES);
         long nextRecharge = COOLDOWN - ((System.currentTimeMillis() - lastUse.getOrDefault(player.getUniqueId(), 0L)) / 1000);
         nextRecharge = Math.max(nextRecharge, 0);
@@ -115,6 +126,7 @@ public class GrapplingHookManager implements Listener {
             bar.append("░");
         }
 
+        // Reprise de l'ancienne ligne d'affichage (sans spigot)
         player.sendActionBar("§eGrappins: §a" + remainingUses + " §7| Recharge: " + bar.toString());
     }
 

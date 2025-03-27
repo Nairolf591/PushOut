@@ -64,4 +64,17 @@ public class EventsListener implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+
+        // Vérifie si la partie est en cours
+        if (!GameManager.getInstance().isGameRunning()) return;
+
+        // Si le joueur descend sous Y=0, il est éliminé
+        else if ((player.getLocation().getY() < 0) &&(GameManager.getInstance().isGameRunning())) {
+            GameManager.getInstance().playerEliminated(player);
+        }
+    }
 }

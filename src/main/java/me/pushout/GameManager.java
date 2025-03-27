@@ -40,7 +40,7 @@ public class GameManager {
         players.clear();
         players.addAll(Bukkit.getOnlinePlayers()); // Tous les joueurs participent
 
-        double radius = 5.0; // Rayon du cercle
+        double radius = 8.0; // Rayon du cercle
         double angleStep = 360.0 / players.size(); // Angle entre chaque joueur
 
         for (int i = 0; i < players.size(); i++) {
@@ -60,10 +60,7 @@ public class GameManager {
     
             // Attribution du grappin
             player.getInventory().addItem(GrapplingHookManager.createGrapplingHook());
-    
-            // Attribution de 16 boules de neige
-            player.getInventory().addItem(new ItemStack(Material.SNOWBALL, 16));
-    
+
             // On initialise un Scoreboard personnel (pour l'affichage du KO)
             player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
@@ -120,18 +117,33 @@ public class GameManager {
 
     public void stopGame() {
         gameRunning = false;
-        // Retirer les snowballs de tous les joueurs pour éviter qu'ils en aient en dehors d'une partie
+        // Pour chaque joueur, retirer les items et téléporter en (0,0) à la surface
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.getInventory().remove(Material.SNOWBALL);
             player.getInventory().remove(Material.FISHING_ROD);
+            // Téléportation à la surface en (0,0)
+            int safeY = Bukkit.getWorld("world").getHighestBlockYAt(0, 0);
+            Location safeLocation = new Location(Bukkit.getWorld("world"), 0, safeY + 1, 0);
+            player.teleport(safeLocation);
         }
         players.clear();
+
+        // Après 1 seconde, remettre les joueurs en mode survie
+        Bukkit.getScheduler().runTaskLater(PushOut.getInstance(), () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.setGameMode(org.bukkit.GameMode.SURVIVAL);
+            }
+        }, 20L);
     }
 
     public void checkGameEnd() {
         if (gameRunning && players.size() == 1) {
             Player winner = players.get(0);
             Bukkit.broadcastMessage("§6" + winner.getName() + " a gagné la partie !");
+
+            // Effet visuel
+            winner.sendTitle("§6🏆 VICTOIRE ! 🏆", "§eVous avez gagné la partie !", 10, 60, 10);
+
             stopGame();
         }
     }
