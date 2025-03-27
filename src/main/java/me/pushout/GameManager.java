@@ -133,6 +133,8 @@ public class GameManager {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.setGameMode(org.bukkit.GameMode.SURVIVAL);
                 player.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+                for (PotionEffect effect : player.getActivePotionEffects())
+                    player.removePotionEffect(effect.getType());
             }
         }, 20L);
     }
