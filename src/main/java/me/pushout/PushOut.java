@@ -26,6 +26,8 @@ public class PushOut extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new SnowballManager(), this);
 
+        Bukkit.getPluginManager().registerEvents(new TNTManager(), this);
+
         getLogger().info("PushOut a été activé !");
     }
 

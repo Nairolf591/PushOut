@@ -1,5 +1,6 @@
 me\pushout\GameManager$1.class
 me\pushout\SnowballManager.class
+me\pushout\TNTManager$2.class
 me\pushout\GameManager.class
 me\pushout\SnowballManager$1.class
 me\pushout\CommandsManager.class
@@ -11,4 +12,6 @@ me\pushout\ConfigMenu.class
 me\pushout\PushOut.class
 me\pushout\GrapplingHookManager$1.class
 me\pushout\KOManager.class
+me\pushout\TNTManager$1.class
 me\pushout\EventsListener.class
+me\pushout\TNTManager.class
