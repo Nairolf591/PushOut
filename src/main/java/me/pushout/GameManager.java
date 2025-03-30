@@ -125,6 +125,8 @@ public class GameManager {
             int safeY = Bukkit.getWorld("world").getHighestBlockYAt(0, 0);
             Location safeLocation = new Location(Bukkit.getWorld("world"), 0, safeY + 1, 0);
             player.teleport(safeLocation);
+            player.setExp(0);
+            player.setLevel(0);
         }
         players.clear();
 

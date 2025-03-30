@@ -99,7 +99,7 @@ public class GrapplingHookManager implements Listener {
     private void propelPlayer(Player player, PlayerFishEvent event) {
         Vector direction = player.getLocation().getDirection().normalize();
         double distance = event.getHook().getLocation().distance(player.getLocation());
-        double force = Math.min(distance * 0.5, 2.0) + 1; // Force similaire à l'ancienne méthode
+        double force = Math.min(distance * 0.5, 2.0) + 0.5; // Force similaire à l'ancienne méthode
         Vector velocity = direction.multiply(force);
         player.setVelocity(velocity);
     }

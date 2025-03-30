@@ -17,12 +17,18 @@ public class PushOut extends JavaPlugin {
         // Enregistrement des commandes
         getCommand("pushout").setExecutor(new CommandsManager());
 
-        getLogger().info("PushOut a été activé !");
+        getCommand("pushoutconfig").setExecutor(new ConfigCommand());
+
+        Bukkit.getPluginManager().registerEvents(new ConfigMenuListener(), this);
+
 
         Bukkit.getPluginManager().registerEvents(new GrapplingHookManager(), this);
 
         Bukkit.getPluginManager().registerEvents(new SnowballManager(), this);
 
+        Bukkit.getPluginManager().registerEvents(new TNTManager(), this);
+
+        getLogger().info("PushOut a été activé !");
     }
 
     @Override
