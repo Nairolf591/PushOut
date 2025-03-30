@@ -114,13 +114,13 @@ public class TNTManager implements Listener {
                 if(dist <= 5){
                     double bonusKO;
                     double knockbackStrength;
-                    if(dist <= 1){
+                    if(dist <= 1.5){
                         bonusKO = 20.0;
-                        knockbackStrength = 14.0;
+                        knockbackStrength = 24.0;
                     } else {
                         // Interpolation linéaire entre 1 et 5 blocs
                         bonusKO = 20.0 * (5 - dist) / 4;
-                        knockbackStrength = 8.0 * (5 - dist) / 4;
+                        knockbackStrength = 12.0 * (5 - dist) / 4;
                     }
                     Vector direction = p.getLocation().toVector().subtract(impactLoc.toVector()).normalize();
                     new KOManager().addKO(p, bonusKO, direction);
