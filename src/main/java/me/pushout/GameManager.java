@@ -39,7 +39,19 @@ public class GameManager {
     public void startGame() {
         gameRunning = true;
         players.clear();
-        players.addAll(Bukkit.getOnlinePlayers()); // Tous les joueurs participent
+        // Ne prendre en compte que les joueurs en mode SURVIVAL
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getGameMode() == org.bukkit.GameMode.SURVIVAL) {
+                players.add(player);
+            }
+        }
+
+        // Si aucun joueur en mode survival n'est présent, on annule la game
+        if (players.isEmpty()) {
+            Bukkit.broadcastMessage("§cAucun joueur en mode Survival n'est présent !");
+            gameRunning = false;
+            return;
+        }
 
         double radius = 8.0; // Rayon du cercle
         double angleStep = 360.0 / players.size(); // Angle entre chaque joueur

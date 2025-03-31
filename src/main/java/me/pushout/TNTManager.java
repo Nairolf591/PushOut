@@ -32,7 +32,7 @@ public class TNTManager implements Listener {
             public void run() {
                 if (!GameManager.getInstance().isGameRunning()) return;
                 // 30% de chance à chaque intervalle de spawn
-                if(random.nextDouble() < 0.3){
+                if(random.nextDouble() < Config.TNT_SPAWN_CHANCE){
                     spawnTNT();
                 }
             }
