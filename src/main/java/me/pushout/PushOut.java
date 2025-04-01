@@ -28,6 +28,10 @@ public class PushOut extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new TNTManager(), this);
 
+        Bukkit.getPluginManager().registerEvents(new BaseballBatManager(), this);
+
+        Bukkit.getPluginManager().registerEvents(new StickyGrenadeManager(), this);
+
         getLogger().info("PushOut a été activé !");
     }
 
