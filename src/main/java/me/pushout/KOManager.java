@@ -3,10 +3,7 @@ package me.pushout;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.*;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
@@ -59,26 +56,32 @@ public class KOManager {
     }
     public static void updatePlayerScoreboard(Player updatedPlayer) {
         Scoreboard board = updatedPlayer.getScoreboard();
-        // Affichage sous le pseudo (Below Name)
-        Objective below = board.getObjective("koPercentage");
-        if (below == null) {
-            below = board.registerNewObjective("koPercentage", "dummy", "KO %");
-            below.setDisplaySlot(DisplaySlot.BELOW_NAME);
+
+        // Récupère ou crée une team avec le nom du joueur
+        Team team = board.getTeam(updatedPlayer.getName());
+        if (team == null) {
+            team = board.registerNewTeam(updatedPlayer.getName());
+            team.addEntry(updatedPlayer.getName());
         }
+
+        // Récupère le KO % actuel
         double percent = koPercent.getOrDefault(updatedPlayer.getUniqueId(), 0.0);
-        String color;
-        if (percent < 80)
-            color = ChatColor.GREEN.toString();
-        else if (percent < 130)
-            color = ChatColor.GOLD.toString();
-        else if (percent < 180)
-            color = ChatColor.RED.toString();
-        else if (percent < 250)
-            color = ChatColor.DARK_RED.toString();
-        else
-            color = ChatColor.BLACK.toString();
-        Score scoreBelow = below.getScore(color + updatedPlayer.getName());
-        scoreBelow.setScore((int) percent);
+
+        // Formate le pourcentage avec le signe %
+        String formattedPercent = String.format("%.0f%%", percent);
+
+        // Applique la couleur selon le pourcentage
+        String coloredPercent;
+        if (percent < 50) {
+            coloredPercent = ChatColor.GREEN + formattedPercent;
+        } else if (percent < 80) {
+            coloredPercent = ChatColor.GOLD + formattedPercent;
+        } else {
+            coloredPercent = ChatColor.RED + formattedPercent;
+        }
+
+        // Met à jour le suffixe de la team pour afficher le pourcentage sous le pseudo
+        team.setSuffix(" " + coloredPercent);
 
         // Mise à jour du scoreboard global en sidebar uniquement si la partie est en cours
         if (GameManager.getInstance().isGameRunning()) {
