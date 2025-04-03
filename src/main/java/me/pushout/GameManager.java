@@ -53,7 +53,7 @@ public class GameManager {
             return;
         }
 
-        double radius = 8.0; // Rayon du cercle
+        double radius = Config.TP_RADIUS; // Rayon du cercle
         double angleStep = 360.0 / players.size(); // Angle entre chaque joueur
 
         for (int i = 0; i < players.size(); i++) {
@@ -106,9 +106,11 @@ public class GameManager {
                     // Appliquer les effets Speed II et Jump Boost II pour couvrir toute la partie
                     for (Player player : players) {
                         player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 999999, 1, false, false));
-                        player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 999999, 1, false, false));
                         player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 999999, 5, false, false));
                         player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 999999, 5, false, false));
+                        if (Config.JUMP_BOOST_ENABLED) {
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 999999, 1, false, false));
+                        }
                     }
                     cancel();
                 }

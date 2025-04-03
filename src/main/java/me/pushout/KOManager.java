@@ -19,12 +19,22 @@ public class KOManager {
         koPercent.put(playerId, newPercent);
         player.setExp((float)((newPercent % 100) / 100.0));
         player.setLevel((int)newPercent);
-        // Augmentation du multiplicateur pour accentuer l'impact du KO
-        double knockbackMultiplier = 0.5 + Math.pow(newPercent / 100.0, 2) * 16.0;
-        Vector knockback = hitDirection.normalize().multiply(knockbackMultiplier);
-        player.setVelocity(knockback);
+        // Calcul du multiplicateur pour accentuer l'impact du KO
+        double knockbackMultiplier = Config.KB_BASE + Math.pow(newPercent / 100.0, 2) * Config.KB_MULTIPLIER;
+
+        // Nouveau calcul du knockback pour éviter que le joueur se barre dans le ciel
+        Vector horizontal = new Vector(hitDirection.getX(), 0, hitDirection.getZ());
+        if (horizontal.lengthSquared() == 0) {
+            horizontal = new Vector(0, 0, 1);
+        }
+        horizontal.normalize();
+        Vector finalKB = horizontal.multiply(knockbackMultiplier);
+        finalKB.setY(0.5 + (knockbackMultiplier * 0.05)); // Ajuste la hauteur verticale ici
+        player.setVelocity(finalKB);
+
         updatePlayerScoreboard(player);
     }
+
 
 
     public void addKO(Player player, double amount) {
@@ -57,7 +67,7 @@ public class KOManager {
     public static void updatePlayerScoreboard(Player updatedPlayer) {
         Scoreboard board = updatedPlayer.getScoreboard();
 
-        // Récupère ou crée une team avec le nom du joueur
+        // Récupère ou crée une team pour le joueur (on ne modifie plus le suffixe)
         Team team = board.getTeam(updatedPlayer.getName());
         if (team == null) {
             team = board.registerNewTeam(updatedPlayer.getName());
@@ -67,23 +77,19 @@ public class KOManager {
         // Récupère le KO % actuel
         double percent = koPercent.getOrDefault(updatedPlayer.getUniqueId(), 0.0);
 
-        // Formate le pourcentage avec le signe %
-        String formattedPercent = String.format("%.0f%%", percent);
+        // On ne touche plus au suffixe pour ne pas altérer le pseudo
+        // team.setSuffix(" " + coloredPercent);
 
-        // Applique la couleur selon le pourcentage
-        String coloredPercent;
-        if (percent < 50) {
-            coloredPercent = ChatColor.GREEN + formattedPercent;
-        } else if (percent < 80) {
-            coloredPercent = ChatColor.GOLD + formattedPercent;
-        } else {
-            coloredPercent = ChatColor.RED + formattedPercent;
+        // Création ou récupération de l'objectif BELOW_NAME pour afficher le KO % sous le pseudo
+        Objective belowName = board.getObjective("koBelowName");
+        if(belowName == null) {
+            belowName = board.registerNewObjective("koBelowName", "dummy", "KO %");
+            belowName.setDisplaySlot(DisplaySlot.BELOW_NAME);
         }
+        // Affiche le pourcentage sous le pseudo (attention : uniquement un entier)
+        belowName.getScore(updatedPlayer.getName()).setScore((int) percent);
 
-        // Met à jour le suffixe de la team pour afficher le pourcentage sous le pseudo
-        team.setSuffix(" " + coloredPercent);
-
-        // Mise à jour du scoreboard global en sidebar uniquement si la partie est en cours
+        // Mise à jour du scoreboard global en sidebar
         if (GameManager.getInstance().isGameRunning()) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 Scoreboard pb = p.getScoreboard();
@@ -105,5 +111,6 @@ public class KOManager {
             }
         }
     }
+
 
 }
